@@ -45,3 +45,11 @@ jobs:
         if grep -q  "ERROR:" err ; then exit 1 ; else echo -e "No broken links found."; fi
         echo $(cat log)
         echo $(cat err)
+    - name: Repository link check
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        touch log err
+        find . -path ./translations -prune -o -name \*.md -exec markdown-link-check -q -v --config .github/configs/markdown-link-check-config.json {} 1>> log 2>> err \;
+        if grep -q  "ERROR:" err ; then exit 1 ; else echo -e "No broken links found."; fi
+        echo $(cat log)
+        echo $(cat err)
