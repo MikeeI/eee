@@ -1,0 +1,39 @@
+name: Markdown Link Check
+
+on:
+  pull_request_target:
+    paths:
+    - '**.md'
+    - '!.github/**'
+    - '!translations/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup Action
+      uses: actions/checkout@v2
+      with:
+        ref: ${{github.event.pull_request.head.ref}}
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - name: Install dependencies
+      run: npm install -g markdown-link-check
+    - name: Changed Files Exporter
+      if: github.event_name == 'pull_request_target'
+      id: files
+      uses: futuratrepadeira/changed-files@v3.0.1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: PR link check
+      if: github.event_name == 'pull_request_target'
+      env:
+        FILES: '${{ steps.files.outputs.files_updated }} ${{ steps.files.outputs.files_created }}'
